@@ -1,3 +1,4 @@
+const async = require('async');
 const { body, validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
@@ -22,9 +23,9 @@ exports.bookinstance_detail = function (req, res, next) {
     .exec((err, bookinstance) => {
       if (err) { return next(err); }
       if (bookinstance == null) { // No results.
-        const emptyErr = new Error('Book copy not found');
-        emptyErr.status = 404;
-        return next(emptyErr);
+        const err = new Error('Book copy not found');
+        err.status = 404;
+        return next(err);
       }
       // Successful, so render.
       res.render('bookinstance_detail', { title: 'Book:', bookinstance });
@@ -96,13 +97,36 @@ exports.bookinstance_create_post = [
 ];
 
 // Display BookInstance delete form on GET.
-exports.bookinstance_delete_get = function (req, res) {
-  res.send('NOT IMPLEMENTED: BookInstance delete GET');
+exports.bookinstance_delete_get = function (req, res, next) {
+  async.parallel({
+    bookinstance(callback) {
+      BookInstance.findById(req.params.id).exec(callback);
+    },
+  }, (err, results) => {
+    if (err) { return next(err); }
+    // Success
+    res.render('bookinstance_delete', {
+      title: 'Delete Bookinstance',
+      bookinstance: results.bookinstance,
+    });
+  });
 };
 
 // Handle BookInstance delete on POST.
-exports.bookinstance_delete_post = function (req, res) {
-  res.send('NOT IMPLEMENTED: BookInstance delete POST');
+exports.bookinstance_delete_post = function (req, res, next) {
+  async.parallel({
+    bookinstance(callback) {
+      BookInstance.findById(req.body.bookinstanceid).exec(callback);
+    },
+  }, (err) => {
+    if (err) { return next(err); }
+    // Success
+    BookInstance.findByIdAndRemove(req.body.bookinstanceid, (err) => {
+      if (err) { return next(err); }
+      // Success, go to bookinstances list
+      res.redirect('/catalog/bookinstances');
+    });
+  });
 };
 
 // Display BookInstance update form on GET.
