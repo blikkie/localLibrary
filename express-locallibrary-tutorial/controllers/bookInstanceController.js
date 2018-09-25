@@ -137,7 +137,6 @@ exports.bookinstance_update_get = function (req, res, next) {
       err.status = 404;
       return next(err);
     } // Success
-    console.log(results);
     res.render('bookinstance_form', {
       title: 'Update Book-Instance',
       book_list: results.books,
