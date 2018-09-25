@@ -1,4 +1,3 @@
-const async = require('async');
 const { body, validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
@@ -98,11 +97,7 @@ exports.bookinstance_create_post = [
 
 // Display BookInstance delete form on GET.
 exports.bookinstance_delete_get = function (req, res, next) {
-  async.parallel({
-    bookinstance(callback) {
-      BookInstance.findById(req.params.id).exec(callback);
-    },
-  }, (err, results) => {
+  BookInstance.findById(req.params.id, (err, results) => {
     if (err) { return next(err); }
     // Success
     res.render('bookinstance_delete', {
@@ -114,11 +109,7 @@ exports.bookinstance_delete_get = function (req, res, next) {
 
 // Handle BookInstance delete on POST.
 exports.bookinstance_delete_post = function (req, res, next) {
-  async.parallel({
-    bookinstance(callback) {
-      BookInstance.findById(req.body.bookinstanceid).exec(callback);
-    },
-  }, (err) => {
+  BookInstance.findById(req.body.bookinstanceid, (err) => {
     if (err) { return next(err); }
     // Success
     BookInstance.findByIdAndRemove(req.body.bookinstanceid, (err) => {
